@@ -20,7 +20,7 @@ pause(){
 }
 
 persona_enviroment="testnet"
-personash_loc="git clone https://github.com/supergrobi020/persona-scripts/blob/master/persona.sh"
+personash_loc="https://raw.githubusercontent.com/supergrobi020/persona-scripts/master/persona.sh"
 
 
 #PSQL Queries
@@ -76,7 +76,7 @@ function drop_db {
         if [ -z "$pgres" ]; then
                 sudo service postgresql start
         fi
-        echo -e "\n\t✔ Droping the persona database!"
+        echo -e "\n[Info]\t✔ Droping the persona database!"
         dropdb --if-exists persona_testnet
 }
 
@@ -85,7 +85,7 @@ function create_db {
         if [ -z "$pgres" ]; then
                 sudo service postgresql start
         fi
-        echo -e "\n\t✔ Creating the persona database!"
+        echo -e "\n[Info]\t✔ Creating the persona database!"
         createdb persona_testnet
 }
 
@@ -95,7 +95,7 @@ function promptyn () {
         case $yn in
             [Yy]* ) return 0;;
             [Nn]* ) return 1;;
-            * ) echo -e "\nPlease answer yes or no.\n";;
+            * ) echo -e "\n[Info]Please answer yes or no.\n[Info]";;
         esac
     done
 }
@@ -111,15 +111,15 @@ function node_check {
 }
 
 function os_up {
-    echo -e "Checking for system updates...\n"
+    echo -e "Checking for system updates...\n[Info]"
     sudo apt-get update >&- 2>&-
     avail_upd=`/usr/lib/update-notifier/apt-check 2>&1 | cut -d ';' -f 1`
         if [ "$avail_upd" == 0 ]; then
-                echo -e "There are no updates available\n"
+                echo -e "There are no updates available\n[Info]"
                 sleep 1
         else
 	     if promptyn "There are $avail_upd updates available for your system. Would you like to install them now? [y/N]: "; then
-            echo -e "Updating the system...\n"
+            echo -e "Updating the system...\n[Info]"
 
             sudo apt-get upgrade -yqq
             sudo apt-get dist-upgrade -yq
@@ -129,11 +129,11 @@ function os_up {
 			sudo apt-get autoremove -yyq
             sudo apt-get autoclean -yq
             
-			echo -e "\nThe system was updated!"
-            echo -e "\nSystem restart is recommended!"
+			echo -e "\n[Info]The system was updated!"
+            echo -e "\n[Info]System restart is recommended!"
             
          else
-            echo -e "\nSystem update canceled. We strongly recommend that you update your operating system on a regular basis."
+            echo -e "\n[Info]System update canceled. We strongly recommend that you update your operating system on a regular basis."
          fi
         fi
 }
@@ -152,11 +152,11 @@ function check_dependencies()
 
     if [[ ! -z "$DEPS_TO_INSTALL" ]]; then
 	     if promptyn "Dependencies [ ${DEPS_TO_INSTALL}] are not installed. Do you want to install them? [y/N]: "; then
-            echo -e "Installing Program Dependencies...\n"
+            echo -e "Installing Program Dependencies...\n[Info]"
             sudo sh -c "sudo apt-get install ${DEPS_TO_INSTALL}"
-            echo -e "Program Dependencies Installed!\n"
+            echo -e "Program Dependencies Installed!\n[Info]"
          else
-            echo -e "\nPlease ensure that the following packages are installed and try again:\n${DEPS_TO_INSTALL}"
+            echo -e "\n[Info]Please ensure that the following packages are installed and try again:\n[Info]${DEPS_TO_INSTALL}"
          fi
 	fi
 }
@@ -165,7 +165,7 @@ function check_dependencies()
 function nvm {
         node_check node
         if [ "$return_" == 0 ]; then
-                echo -e "Node is not installed, installing..."
+                echo -e "\n[Info]Node is not installed, installing..."
                 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.32.0/install.sh 2>/dev/null | bash >>install.log
                 export NVM_DIR="$HOME/.nvm"
                 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
@@ -174,28 +174,28 @@ function nvm {
                 nvm install 8.9.4 >>install.log
                 nvm use 8.9.4 >>install.log
                 nvm alias default 8.9.4 >>install.log
-				npm install -g npm >>install.log 2>&1
-                echo -e "Node `node -v` has been installed.)"
+		npm install -g npm >>install.log 2>&1
+                echo -e "\n[Info]Node `node -v` has been installed."
         else
-                echo -e "Node `node -v` is  already installed.)"
+                echo -e "\n[Info]Node `node -v` is  already installed."
         fi
 
         node_check forever
         if [ "$return_" == 0 ]; then
-                echo -e "(Forever is not installed, installing...)"
+                echo -e "\n[Info]Forever is not installed, installing..."
                 ### Install forever ###
                 sudo npm install forever -g >>install.log 2>&1
-                echo -e "(Forever has been installed.)"
+                echo -e "\n[Info]Forever has been installed."
         else
-                echo -e "(Forever is alredy installed.)"
+                echo -e "\n[Info]Forever is alredy installed."
         fi
         # Setting fs.notify.max_user_watches
         if grep -qi 'fs.inotify' /etc/sysctl.conf ; then
-                echo -e "\n(fs.inotify.max_user_watches is already set.)"
+                echo -e "\n[Info]fs.inotify.max_user_watches is already set."
         else
                 echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
         fi
-        echo -e "\n(Check install.log for reported install errors.)"
+        echo -e "\n[Info]Check install.log for reported install errors."
 }
 
 
@@ -206,33 +206,50 @@ inst_persona(){
         cd $HOME
         check_dependencies
         nvm
+
+	echo -e "\n[Info]Cloaning and installing the Persona node.\n"
         git clone https://github.com/PersonaIam/persona${persona_enviroment} persona-node
         cd persona-node
         npm install libpq 2>/dev/null
         npm install secp256k1 2>/dev/null
         npm install bindings 2>/dev/null
         npm install 2>/dev/null
-        git clone ${personash_loc}
-        echo -e "(Drink a beer. We need up upgrade the file system database. This is making us faster.)"
+	
+	
+	echo -e "\n[Info]Downloading the Persona manager."
+        wget -q ${personash_loc}
+	chmod u+x $personadir/persona.sh
+        echo -e "\n[Info]Drink a beer. We need up upgrade the file system database. This is making us faster."
         sudo updatedb
-        cp $HOME/persona.sh $HOME/persona-node/
+
 }
 
 
 update_persona(){
 	proc_vars
 	cd $HOME
-	if [ -z ${frvr} ]; then
-		echo -e "\n(Stopping Persona process: ${frvr})"
+	if [[ ${frvr} ]]; then
+		echo -e "\n[Info]Stopping Persona process: ${frvr}"
 		$personadir/persona.sh stop
-	else
-		cp $personadir/config.${persona_enviroment}.json $HOME
-		mv $personadir personaBackup.old
-		inst_persona
-		echo -e "\n(Copy the old configuration file back to: ${personadir})"
-		cp $HOME/config.${persona_enviroment}.json $personadir
-		$personadir/persona.sh start 	
+		echo -e "\n[Info]Dropping the Persona database"
+		$personadir/persona.sh drop_db
 	fi
+	
+	cp $personadir/config.${persona_enviroment}.json $HOME
+	
+	if [[ -d ${HOME}/personaBackup.old ]]; then
+		echo -e "\n[Info]Removing the old backup directory: ${personadir}/personaBackup.old"
+		rm -fr ${HOME}/personaBackup.old
+	fi
+	echo -e "\n[Info]Creating a backup of the node directory: ${personadir}"
+	mv $personadir personaBackup.old
+
+	inst_persona
+
+	echo -e "\n[Info]Copy the old configuration file back to: ${personadir}"
+	cp $HOME/config.${persona_enviroment}.json $personadir
+	$personadir/persona.sh start 	
+
 }
 
 case $1 in
