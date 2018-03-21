@@ -20,6 +20,8 @@ pause(){
 }
 
 persona_enviroment="testnet"
+personash_loc="git clone https://github.com/supergrobi020/persona-scripts/blob/master/persona.sh"
+
 
 #PSQL Queries
 query() {
@@ -210,7 +212,7 @@ inst_persona(){
         npm install secp256k1 2>/dev/null
         npm install bindings 2>/dev/null
         npm install 2>/dev/null
-        git clone https://github.com/supergrobi020/persona-scripts/blob/master/persona.sh
+        git clone ${personash_loc}
         echo -e "(Drink a beer. We need up upgrade the file system database. This is making us faster.)"
         sudo updatedb
         cp $HOME/persona.sh $HOME/persona-node/
