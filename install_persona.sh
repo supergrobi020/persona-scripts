@@ -86,6 +86,10 @@ function create_db {
                 sudo service postgresql start
         fi
         echo -e "\n[Info]\t✔ Creating the persona database!"
+        sudo -u postgres psql -c "update pg_database set encoding = 6, datcollate = 'en_US.UTF8', datctype = 'en_US.UTF8' where datname = 'template0';"
+        sudo -u postgres psql -c "update pg_database set encoding = 6, datcollate = 'en_US.UTF8', datctype = 'en_US.UTF8' where datname = 'template1';"
+        sudo -u postgres dropuser --if-exists $USER
+        sudo -u postgres psql -c "CREATE USER $USER WITH PASSWORD 'password' CREATEDB;"
         createdb persona_testnet
 }
 
@@ -204,6 +208,7 @@ function nvm {
 # Install Persona node
 inst_persona(){
         cd $HOME
+        proc_vars
         check_dependencies
         nvm
 

@@ -14,6 +14,7 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 LOC_SERVER="http://127.0.0.1"
+persona_enviroment="testnet"
 
 pause(){
         read -p "   	Press [Enter] key to continue..." fakeEnterKey
@@ -82,7 +83,12 @@ function create_db {
                 sudo service postgresql start
         fi
         echo -e "\n\t✔ Creating the persona database!"
-        createdb persona_testnet
+         sudo -u postgres psql -c "update pg_database set encoding = 6, datcollate = 'en_US.UTF8', datctype = 'en_US.UTF8' where datname = 'template0';"
+         sudo -u postgres psql -c "update pg_database set encoding = 6, datcollate = 'en_US.UTF8', datctype = 'en_US.UTF8' where datname = 'template1';"
+         sudo -u postgres dropuser --if-exists $USER
+         sudo -u postgres psql -c "CREATE USER $USER WITH PASSWORD 'password' CREATEDB;"
+
+        createdb persona_${persona_enviroment}
 }
 
 ### Dan on 24.02.2018
