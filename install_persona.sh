@@ -206,11 +206,30 @@ function nvm {
 
 
 # Install Persona node
-inst_persona(){
+update_persona(){
+
+    proc_vars
+    check_dependencies
+
+    #Stop persona node
+    if [[ ${frvr} ]]; then
+        echo -e "\n[Info]Stopping Persona process: ${frvr}"
+        $personadir/persona.sh stop
+    fi
+	
+	# Backup persona-node
+	cp $personadir/config.${persona_enviroment}.json $HOME
+	
+	if [[ -d ${HOME}/personaBackup.old ]]; then
+		echo -e "\n[Info]Removing the old backup directory: ${personadir}/personaBackup.old"
+		rm -fr ${HOME}/personaBackup.old
+	fi
+	echo -e "\n[Info]Creating a backup of the node directory: ${personadir}"
+	mv $personadir personaBackup.old
         cd $HOME
-        proc_vars
-        check_dependencies
-        nvm
+    
+    
+    nvm
 
 	echo -e "\n[Info]Cloaning and installing the Persona node.\n"
         git clone https://github.com/PersonaIam/persona${persona_enviroment} persona-node
@@ -230,7 +249,7 @@ inst_persona(){
 }
 
 
-update_persona(){
+inst_persona(){
 	proc_vars
 	cd $HOME
 	if [[ ${frvr} ]]; then
@@ -240,16 +259,8 @@ update_persona(){
 		$personadir/persona.sh drop_db
 	fi
 	
-	cp $personadir/config.${persona_enviroment}.json $HOME
-	
-	if [[ -d ${HOME}/personaBackup.old ]]; then
-		echo -e "\n[Info]Removing the old backup directory: ${personadir}/personaBackup.old"
-		rm -fr ${HOME}/personaBackup.old
-	fi
-	echo -e "\n[Info]Creating a backup of the node directory: ${personadir}"
-	mv $personadir personaBackup.old
-
-	inst_persona
+    create_db
+	update_persona
 
 	echo -e "\n[Info]Copy the old configuration file back to: ${personadir}"
 	cp $HOME/config.${persona_enviroment}.json $personadir
