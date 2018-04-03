@@ -205,7 +205,7 @@ function nvm {
 
 
 
-# Install Persona node
+# Update Persona node
 update_persona(){
 
     proc_vars
@@ -217,7 +217,7 @@ update_persona(){
         $personadir/persona.sh stop
     fi
 	
-	# Backup persona-node
+	# Backup persona-node config
 	cp $personadir/config.${persona_enviroment}.json $HOME
 	
 	if [[ -d ${HOME}/personaBackup.old ]]; then
@@ -248,7 +248,7 @@ update_persona(){
 
 }
 
-
+#Install Persona Node
 inst_persona(){
 	proc_vars
 	cd $HOME
@@ -256,7 +256,7 @@ inst_persona(){
 		echo -e "\n[Info]Stopping Persona process: ${frvr}"
 		$personadir/persona.sh stop
 		echo -e "\n[Info]Dropping the Persona database"
-		$personadir/persona.sh drop_db
+		drop_db
 	fi
 	
     create_db
