@@ -14,7 +14,7 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 LOC_SERVER="http://127.0.0.1"
-persona_enviroment="testnet"
+persona_environment="mainnet"
 
 pause(){
         read -p "   	Press [Enter] key to continue..." fakeEnterKey
@@ -22,14 +22,14 @@ pause(){
 
 #PSQL Queries
 query() {
-    PUBKEY="$(psql -d persona_testnet -t -c 'SELECT ENCODE("publicKey",'"'"'hex'"'"') as "publicKey" FROM mem_accounts WHERE "address" = '"'"$ADDRESS"'"' ;' | xargs)"
-    DNAME="$(psql -d persona_testnet -t -c 'SELECT username FROM mem_accounts WHERE "address" = '"'"$ADDRESS"'"' ;' | xargs)"
-    PROD_BLOCKS="$(psql -d persona_testnet -t -c 'SELECT producedblocks FROM mem_accounts WHERE "address" = '"'"$ADDRESS"'"' ;' | xargs)"
-    MISS_BLOCKS="$(psql -d persona_testnet -t -c 'SELECT missedblocks FROM mem_accounts WHERE "address" = '"'"$ADDRESS"'"' ;' | xargs)"
-    #BALANCE="$(psql -d persona_testnet -t -c 'SELECT (balance/100000000.0) as balance FROM mem_accounts WHERE "address" = '"'"$ADDRESS"'"' ;' | sed -e 's/^[[:space:]]*//')"
-    BALANCE="$(psql -d persona_testnet -t -c 'SELECT to_char(("balance"/100000000.0), '"'FM 999,999,999,990D00000000'"' ) as balance FROM mem_accounts WHERE "address" = '"'"$ADDRESS"'"' ;' | xargs)"
-    HEIGHT="$(psql -d persona_testnet -t -c 'SELECT height FROM blocks ORDER BY HEIGHT DESC LIMIT 1;' | xargs)"
-    RANK="$(psql -d persona_testnet -t -c 'WITH RANK AS (SELECT DISTINCT "publicKey", "vote", "round", row_number() over (order by "vote" desc nulls last) as "rownum" FROM mem_delegates where "round" = (select max("round") from mem_delegates) ORDER BY "vote" DESC) SELECT "rownum" FROM RANK WHERE "publicKey" = '"'03cfafb2ca8cf7ce70f848456b1950dc7901946f93908e4533aace997c242ced8a'"';' | xargs)"
+    PUBKEY="$(psql -d persona_${persona_environment} -t -c 'SELECT ENCODE("publicKey",'"'"'hex'"'"') as "publicKey" FROM mem_accounts WHERE "address" = '"'"$ADDRESS"'"' ;' | xargs)"
+    DNAME="$(psql -d persona_${persona_environment} -t -c 'SELECT username FROM mem_accounts WHERE "address" = '"'"$ADDRESS"'"' ;' | xargs)"
+    PROD_BLOCKS="$(psql -d persona_${persona_environment} -t -c 'SELECT producedblocks FROM mem_accounts WHERE "address" = '"'"$ADDRESS"'"' ;' | xargs)"
+    MISS_BLOCKS="$(psql -d persona_${persona_environment} -t -c 'SELECT missedblocks FROM mem_accounts WHERE "address" = '"'"$ADDRESS"'"' ;' | xargs)"
+    #BALANCE="$(psql -d persona_${persona_environment} -t -c 'SELECT (balance/100000000.0) as balance FROM mem_accounts WHERE "address" = '"'"$ADDRESS"'"' ;' | sed -e 's/^[[:space:]]*//')"
+    BALANCE="$(psql -d persona_${persona_environment} -t -c 'SELECT to_char(("balance"/100000000.0), '"'FM 999,999,999,990D00000000'"' ) as balance FROM mem_accounts WHERE "address" = '"'"$ADDRESS"'"' ;' | xargs)"
+    HEIGHT="$(psql -d persona_${persona_environment} -t -c 'SELECT height FROM blocks ORDER BY HEIGHT DESC LIMIT 1;' | xargs)"
+    RANK="$(psql -d persona_${persona_environment} -t -c 'WITH RANK AS (SELECT DISTINCT "publicKey", "vote", "round", row_number() over (order by "vote" desc nulls last) as "rownum" FROM mem_delegates where "round" = (select max("round") from mem_delegates) ORDER BY "vote" DESC) SELECT "rownum" FROM RANK WHERE "publicKey" = '"'03cfafb2ca8cf7ce70f848456b1950dc7901946f93908e4533aace997c242ced8a'"';' | xargs)"
 }
 
 function net_height {
@@ -74,7 +74,7 @@ function drop_db {
                 sudo service postgresql start
         fi
         echo -e "\n\t✔ Droping the persona database!"
-        dropdb --if-exists persona_testnet
+        dropdb --if-exists persona_${persona_environment} 
 }
 
 function create_db {
@@ -88,10 +88,9 @@ function create_db {
          sudo -u postgres dropuser --if-exists $USER
          sudo -u postgres psql -c "CREATE USER $USER WITH PASSWORD 'password' CREATEDB;"
 
-        createdb persona_${persona_enviroment}
+        createdb persona_${persona_environment}
 }
 
-### Dan on 24.02.2018
 function promptyn () {
     while true; do
         read -p "$1 " yn
@@ -121,87 +120,25 @@ function os_up {
                 echo -e "There are no updates available\n"
                 sleep 1
         else
-	     if promptyn "There are $avail_upd updates available for your system. Would you like to install them now? [y/N]: "; then
-            echo -e "Updating the system...\n"
+	    if promptyn "There are $avail_upd updates available for your system. Would you like to install them now? [y/N]: "; then
+            	echo -e "Updating the system...\n"
 
-            sudo apt-get upgrade -yqq
-            sudo apt-get dist-upgrade -yq
+            	sudo apt-get upgrade -yqq
+            	sudo apt-get dist-upgrade -yq
             
-			echo -e "Do some cleanup..."
+	    	echo -e "Do some cleanup..."
 
-			sudo apt-get autoremove -yyq
-            sudo apt-get autoclean -yq
+	    	sudo apt-get autoremove -yyq
+            	sudo apt-get autoclean -yq
             
-			echo -e "\nThe system was updated!"
-            echo -e "\nSystem restart is recommended!"
+		echo -e "\nThe system was updated!"
+            	echo -e "\nSystem restart is recommended!"
             
-         else
-            echo -e "\nSystem update canceled. We strongly recommend that you update your operating system on a regular basis."
-         fi
+            else
+            	echo -e "\nSystem update canceled. We strongly recommend that you update your operating system on a regular basis."
+            fi
         fi
 }
-
-function check_dependencies()
-{
-    local -a dependencies="postgresql postgresql-contrib libpq-dev build-essential python git curl jq libtool autoconf locales automake locate zip unzip htop nmon iftop pkg-config libcairo2-dev libgif-dev ntp"
-
-    DEPS_TO_INSTALL=""
-    for dependency in ${dependencies[@]}; do
-        PKG_INSTALLED=$(dpkg -l "$dependency" 2>/dev/null | fgrep "$dependency" | egrep "^[a-zA-Z]" | awk '{print $2}') || true
-        if [[ "$PKG_INSTALLED" != "$dependency" ]]; then
-            DEPS_TO_INSTALL="$DEPS_TO_INSTALL$dependency "
-        fi
-    done
-
-    if [[ ! -z "$DEPS_TO_INSTALL" ]]; then
-	     if promptyn "Dependencies [ ${DEPS_TO_INSTALL}] are not installed. Do you want to install them? [y/N]: "; then
-            echo -e "Installing Program Dependencies...\n"
-            sudo sh -c "sudo apt-get install ${DEPS_TO_INSTALL}"
-            echo -e "Program Dependencies Installed!\n"
-         else
-            echo -e "\nPlease ensure that the following packages are installed and try again:\n${DEPS_TO_INSTALL}"
-         fi
-	fi
-}
-
-# Install Node Version Manager (NVM)
-function nvm {
-        node_check node
-        if [ "$return_" == 0 ]; then
-                echo -e "Node is not installed, installing..."
-                curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.32.0/install.sh 2>/dev/null | bash >>install.log
-                export NVM_DIR="$HOME/.nvm"
-                [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-
-                ### Installing node ###
-                nvm install 8.9.4 >>install.log
-                nvm use 8.9.4 >>install.log
-                nvm alias default 8.9.4 >>install.log
-				npm install -g npm >>install.log 2>&1
-                echo -e "Node `node -v` has been installed.)"
-        else
-                echo -e "Node `node -v` is  already installed.)"
-        fi
-
-        node_check forever
-        if [ "$return_" == 0 ]; then
-                echo -e "(Forever is not installed, installing...)"
-                ### Install forever ###
-                sudo npm install forever -g >>install.log 2>&1
-                echo -e "(Forever has been installed.)"
-        else
-                echo -e "(Forever is alredy installed.)"
-        fi
-        # Setting fs.notify.max_user_watches
-        if grep -qi 'fs.inotify' /etc/sysctl.conf ; then
-                echo -e "\n(fs.inotify.max_user_watches is already set.)"
-        else
-                echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
-        fi
-        echo -e "\n(Check install.log for reported install errors.)"
-}
-### End Dan
-
 
 # Start Persona Node
 start(){
@@ -215,7 +152,7 @@ start(){
         else
             echo -e "\n\tStarting Persona Node..."
             cd $personadir
-            forever start app.js --genesis genesisBlock.testnet.json --config config.testnet.json >&- 2>&-
+            forever start app.js --genesis genesisBlock.${persona_environment}.json --config config.${persona_environment}.json >&- 2>&-
             cd $parent
             echo -e "\t✔ Persona Node was successfully started"
             sleep 1
@@ -240,8 +177,8 @@ status(){
                         echo -e "\tPersona Node process is working with:"
                         echo -e "\tSystem PID: $node, Forever PID $forever_process"
                         echo -e "\tand Work Directory: $personadir"
-            			query
-			            echo -e "\tBlock height: $HEIGHT"
+        		query
+			echo -e "\tBlock height: $HEIGHT"
                         echo -e "\tPeer table: $net_height\t"
                 else
                         echo -e "\t✘ No Persona Node process is running"
@@ -252,21 +189,6 @@ status(){
 }
 
 
-# Install Persona node
-inst_persona(){
-        cd $HOME
-        check_dependencies
-        nvm
-        git clone https://github.com/PersonaIam/personatestnet persona-node
-        cd persona-node
-        npm install libpq 2>/dev/null
-        npm install secp256k1 2>/dev/null
-        npm install bindings 2>/dev/null
-        npm install 2>/dev/null
-        echo -e "(Drink a beer. We need up upgrade the file system database. This is making us faster.)"
-        sudo updatedb
-        cp $HOME/persona.sh $HOME/persona-node/
-}
 
 # Restart Node
 restart(){
@@ -313,7 +235,6 @@ case $1 in
       killit
       sleep 2
       start
-      #show_blockHeight
       ;;
     "status")
       status
@@ -329,20 +250,11 @@ case $1 in
       drop_db
       create_db
     ;;
-    "install")
-      inst_persona
-    ;;
     "os_update")
       os_up
       ;;
-    "persona_dependencies")
-      check_dependencies
-    ;;
-    "node_dependencies")
-      nvm
-    ;;
-*)
-    echo 'Available options: reload (stop/start), start, stop, clean_db install, os_update, persona_dependencies, node_dependencies'
+    *)
+    echo 'Available options: reload (stop/start), start, stop, os_update, clean_db'
     echo "Usage: ${0}"
     exit 1
     ;;

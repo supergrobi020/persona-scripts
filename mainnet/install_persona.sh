@@ -19,7 +19,7 @@ pause(){
         read -p "   	Press [Enter] key to continue..." fakeEnterKey
 }
 
-persona_environment="mainnnet"
+persona_environment="mainnet"
 personash_loc="https://raw.githubusercontent.com/supergrobi020/persona-scripts/master/persona.sh"
 
 
@@ -213,7 +213,7 @@ clean_install(){
 
     	nvm
 
-	echo -e "\n[Info] Cloaning and installing the Persona node.\n"
+	    echo -e "\n[Info] Cloaning and installing the Persona node.\n"
         git clone https://github.com/PersonaIam/personatestnet -b persona-mainnet persona-node
         cd persona-node
         npm install libpq 2>/dev/null
@@ -222,9 +222,10 @@ clean_install(){
         npm install 2>/dev/null
 	
 	
-	echo -e "\n[Info] Downloading the Persona manager."
-        wget -q ${personash_loc}
-	chmod u+x $personadir/persona.sh
+	    echo -e "\n[Info] Downloading the Persona manager."
+        curl -Os ${personash_loc}
+        sleep 5
+	    chmod u+x $personadir/persona.sh
         echo -e "\n[Info] Drink a beer. We need up upgrade the file system database. This is making us faster."
         sudo updatedb
 }
@@ -242,7 +243,7 @@ update_persona(){
     fi
 	
 	# Backup persona-node config
-	cp $personadir/config.${persona_enviroment}.json $HOME
+	cp $personadir/config.${persona_environment}.json $HOME
 	
 	if [[ -d ${HOME}/personaBackup.old ]]; then
 		echo -e "\n[Info] Removing the old backup directory: ${personadir}/personaBackup.old"
@@ -259,6 +260,8 @@ update_persona(){
 #Install Persona Node
 inst_persona(){
 	proc_vars
+    check_dependencies
+	
 	cd $HOME
 	if [[ ${frvr} ]]; then
 		echo -e "\n[Info] Stopping Persona process: ${frvr}"
