@@ -34,14 +34,12 @@ This is a fork from Ark with the following features:
 ### Install
 
 Install essentials:
-
 ```
 sudo apt-get update
 sudo apt-get install -y curl build-essential python git
 ```
 
 Install PostgreSQL (min version: 9.5.2)
-
 ```
 sudo apt-get install -y postgresql postgresql-contrib
 sudo -u postgres createuser --createdb --password $USER
@@ -49,7 +47,6 @@ createdb persona_mainnet
 ```
 
 Install Node.js (tested with version 6.9.2, but any recent LTS release should do):
-
 ```
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.32.0/install.sh 2>/dev/null | bash
 nvm install 8.9.4
@@ -57,6 +54,7 @@ nvm use 8.9.4
 nvm alias default 8.9.4
 npm install -g npm 
 npm install forever -g 
+```
 
 Clone this repository
 ```
@@ -144,7 +142,6 @@ npm test
 ```
 
 Run individual tests:
-
 ```
 npm test -- test/api/accounts.js
 npm test -- test/api/transactions.js
