@@ -20,7 +20,7 @@ pause(){
 }
 
 persona_environment="mainnet"
-personash_loc="https://raw.githubusercontent.com/supergrobi020/persona-scripts/master/persona.sh"
+personash_loc="https://raw.githubusercontent.com/supergrobi020/persona-scripts/master/mainnet/persona.sh"
 
 
 # Check if program is installed
@@ -150,25 +150,27 @@ function os_up {
 
 function check_dependencies()
 {
-    local -a dependencies="postgresql postgresql-contrib libpq-dev build-essential python git curl jq libtool autoconf locales automake locate zip unzip htop nmon iftop pkg-config libcairo2-dev libgif-dev ntp"
+ sudo apt update && sudo apt upgrade postgresql postgresql-contrib libpq-dev build-essential python git curl jq libtool autoconf locales automake locate zip unzip htop nmon iftop pkg-config libcairo2-dev libgif-dev ntp -yq && sudo apt autoremove -y
+    
+ #       local -a dependencies="postgresql postgresql-contrib libpq-dev build-essential python git curl jq libtool autoconf locales automake locate zip unzip htop nmon iftop pkg-config libcairo2-dev libgif-dev ntp"
 
-    DEPS_TO_INSTALL=""
-    for dependency in ${dependencies[@]}; do
-        PKG_INSTALLED=$(dpkg -l "$dependency" 2>/dev/null | fgrep "$dependency" | egrep "^[a-zA-Z]" | awk '{print $2}') || true
-        if [[ "$PKG_INSTALLED" != "$dependency" ]]; then
-            DEPS_TO_INSTALL="$DEPS_TO_INSTALL$dependency "
-        fi
-    done
+ #       DEPS_TO_INSTALL=""
+ #       for dependency in ${dependencies[@]}; do
+ #           PKG_INSTALLED=$(dpkg -l "$dependency" 2>/dev/null | fgrep "$dependency" | egrep "^[a-zA-Z]" | awk '{print $2}') || true
+ #           if [[ "$PKG_INSTALLED" != "$dependency" ]]; then
+ #               DEPS_TO_INSTALL="$DEPS_TO_INSTALL$dependency "
+ #           fi
+ #       done
 
-    if [[ ! -z "$DEPS_TO_INSTALL" ]]; then
-	     if promptyn "Dependencies [ ${DEPS_TO_INSTALL}] are not installed. Do you want to install them? [y/N]: "; then
-            echo -e "Installing Program Dependencies...\n[Info]"
-            sudo sh -c "sudo apt-get install ${DEPS_TO_INSTALL}"
-            echo -e "Program Dependencies Installed!\n[Info]"
-         else
-            echo -e "\n[Info] Please ensure that the following packages are installed and try again:\n[Info]${DEPS_TO_INSTALL}"
-         fi
-	fi
+ #       if [[ ! -z "$DEPS_TO_INSTALL" ]]; then
+ #            if promptyn "Dependencies [ ${DEPS_TO_INSTALL}] are not installed. Do you want to install them? [y/N]: "; then
+ #               echo -e "Installing Program Dependencies...\n[Info]"
+ #               sudo sh -c "sudo apt-get install ${DEPS_TO_INSTALL}"
+ #               echo -e "Program Dependencies Installed!\n[Info]"
+ #            else
+ #               echo -e "\n[Info] Please ensure that the following packages are installed and try again:\n[Info]${DEPS_TO_INSTALL}"
+ #            fi
+ #       fi
 }
 
 # Install Node Version Manager (NVM)
