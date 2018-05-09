@@ -2,7 +2,6 @@ Persona mainnet platform. For more information please refer to our website: http
 
 This version is still alpha, use at your own risks
 
-<!-- ## Install, Upgrade etc...
 You need to provision a linux (ubuntu tested) server (digital ocean, vultur or other).
 
 Then use the persona install script
