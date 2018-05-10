@@ -22,7 +22,6 @@ pause(){
 persona_environment="mainnet"
 personash_loc="https://raw.githubusercontent.com/supergrobi020/persona-scripts/master/mainnet/persona.sh"
 
-
 # Check if program is installed
 function node_check {
         # defaulting to 1
@@ -226,7 +225,7 @@ clean_install(){
 	
 	    echo -e "\n[Info] Downloading the Persona manager."
         curl -Os ${personash_loc}
-        sleep 5
+        sleep 10
 	    chmod u+x $personadir/persona.sh
         echo -e "\n[Info] Drink a beer. We need up upgrade the file system database. This is making us faster."
         sudo updatedb
@@ -263,7 +262,8 @@ update_persona(){
 inst_persona(){
 	proc_vars
     check_dependencies
-	
+	personadir="$HOME/persona-node"
+
 	cd $HOME
 	if [[ ${frvr} ]]; then
 		echo -e "\n[Info] Stopping Persona process: ${frvr}"
@@ -272,7 +272,7 @@ inst_persona(){
 		drop_db
 	fi
 	
-    	create_db
+    create_db
 	clean_install
 
 	echo -e "\n[Info] Just run: ${personadir}/persona.sh start to start the node"
