@@ -152,7 +152,7 @@ start(){
         else
             echo -e "\n\tStarting Persona Node..."
             cd $personadir
-            forever start app.js --genesis genesisBlock.${persona_environment}.json --config config.${persona_environment}.json >&- 2>&-
+            forever start -s app.js --genesis genesisBlock.${persona_environment}.json --config config.${persona_environment}.json >&- 2>&-
             cd $parent
             echo -e "\t✔ Persona Node was successfully started"
             sleep 1
