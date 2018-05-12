@@ -65,6 +65,7 @@ function proc_vars {
 #        # Node process work directory
 #        nwd=`pwdx $node 2>/dev/null | awk '{print $2}'`
         node_path="${HOME}/.nvm/versions/*/*/bin/"
+        export PATH=$PATH:$node_path
 }
 
 
