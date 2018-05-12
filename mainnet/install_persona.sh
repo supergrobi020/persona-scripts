@@ -151,25 +151,6 @@ function check_dependencies()
 {
  sudo apt update && sudo apt upgrade postgresql postgresql-contrib libpq-dev build-essential python git curl jq libtool autoconf locales automake locate zip unzip htop nmon iftop pkg-config libcairo2-dev libgif-dev ntp -yq && sudo apt autoremove -y
     
- #       local -a dependencies="postgresql postgresql-contrib libpq-dev build-essential python git curl jq libtool autoconf locales automake locate zip unzip htop nmon iftop pkg-config libcairo2-dev libgif-dev ntp"
-
- #       DEPS_TO_INSTALL=""
- #       for dependency in ${dependencies[@]}; do
- #           PKG_INSTALLED=$(dpkg -l "$dependency" 2>/dev/null | fgrep "$dependency" | egrep "^[a-zA-Z]" | awk '{print $2}') || true
- #           if [[ "$PKG_INSTALLED" != "$dependency" ]]; then
- #               DEPS_TO_INSTALL="$DEPS_TO_INSTALL$dependency "
- #           fi
- #       done
-
- #       if [[ ! -z "$DEPS_TO_INSTALL" ]]; then
- #            if promptyn "Dependencies [ ${DEPS_TO_INSTALL}] are not installed. Do you want to install them? [y/N]: "; then
- #               echo -e "Installing Program Dependencies...\n[Info]"
- #               sudo sh -c "sudo apt-get install ${DEPS_TO_INSTALL}"
- #               echo -e "Program Dependencies Installed!\n[Info]"
- #            else
- #               echo -e "\n[Info] Please ensure that the following packages are installed and try again:\n[Info]${DEPS_TO_INSTALL}"
- #            fi
- #       fi
 }
 
 # Install Node Version Manager (NVM)
@@ -182,21 +163,22 @@ function nvm {
                 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
                 ### Installing node ###
-                nvm install 8.9.4 >>install.log
-                nvm use 8.9.4 >>install.log
-                nvm alias default 8.9.4 >>install.log
-		npm install -g npm >>install.log 2>&1
+                node_version="8.11.1"
+                nvm install ${node_version} >>install.log
+                nvm use ${node_version} >>install.log
+                nvm alias default ${node_version} >>install.log
+        		npm install -g npm >>install.log 2>&1
                 echo -e "\n[Info] Node `node -v` has been installed."
         else
                 echo -e "\n[Info] Node `node -v` is  already installed."
         fi
 
-        node_check forever
+        node_check f4orever
         if [ "$return_" == 0 ]; then
                 echo -e "\n[Info] Forever is not installed, installing..."
                 ### Install forever ###
                 npm install forever -g >>install.log 2>&1
-                sudo ln -s $HOME/nvm/versions/node/*/bin/node /usr/local/bin/node
+                sudo ln -s $HOME/.nvm/versions/node/${node_version}/bin/node /usr/local/bin/node
                 echo -e "\n[Info] Forever has been installed."
         else
                 echo -e "\n[Info] Forever is alredy installed."
