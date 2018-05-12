@@ -59,11 +59,12 @@ function proc_vars {
         # Getting the parent of the install path
         parent=`dirname $personadir 2>&1`
 
-        # Forever Process ID
-        forever_process=`forever --plain list | grep $node | sed -nr 's/.*\[(.*)\].*/\1/p'`
-
-        # Node process work directory
-        nwd=`pwdx $node 2>/dev/null | awk '{print $2}'`
+#        # Forever Process ID
+#        forever_process=`forever --plain list | grep $node | sed -nr 's/.*\[(.*)\].*/\1/p'`
+#
+#        # Node process work directory
+#        nwd=`pwdx $node 2>/dev/null | awk '{print $2}'`
+        node_path="${HOME}/.nvm/versions/*/*/bin/"
 }
 
 
@@ -152,11 +153,10 @@ start(){
         else
             echo -e "\n\tStarting Persona Node..."
             cd $personadir
-            forever start -s app.js --genesis genesisBlock.${persona_environment}.json --config config.${persona_environment}.json >&- 2>&-
+            ${node_path}/forever start -s app.js --genesis genesisBlock.${persona_environment}.json --config config.${persona_environment}.json >&- 2>&-
             cd $parent
             echo -e "\t✔ Persona Node was successfully started"
             sleep 1
-            proc_vars
             echo -e "\n\tPersona Node started with:"
             echo -e "\tSystem PID: $node, Forever PID $forever_process"
             echo -e "\tand Work Directory: $personadir\n"
@@ -198,7 +198,7 @@ restart(){
                 echo -e "\tInstance of Persona Node found with:"
                 echo -e "\tSystem PID: $node, Forever PID $forever_process"
                 echo -e "\tDirectory: $personadir\n"
-        forever restart $forever_process >&- 2>&-
+        ${node_path}/forever restart $forever_process >&- 2>&-
         echo -e "\t✔ Persona Node was successfully restarted\n"
     else
         echo -e "\n\t✘ Persona Node process is not running\n"
@@ -218,7 +218,7 @@ killit(){
                         echo -e "\tand Work Directory: $personadir\n"
             echo -e "\n\tStopping Pesona Node..."
             cd $personadir
-            forever stop $forever_process >&- 2>&-
+            ${node_path}/forever stop $forever_process >&- 2>&-
             cd $parent
             echo -e "\t✔ Persona Node was successfully stopped"
                 else
