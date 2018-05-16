@@ -14,7 +14,9 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 LOC_SERVER="http://127.0.0.1"
+
 persona_environment="testnet"
+snapshot_environment="test_net/db_dump-2018-05-13/persona_testnet-2018-05-13.sql.gz"
 
 pause(){
         read -p "   	Press [Enter] key to continue..." fakeEnterKey
@@ -58,13 +60,12 @@ function proc_vars {
 
         # Getting the parent of the install path
         parent=`dirname $personadir 2>&1`
-
-	node_path="${HOME}/.nvm/versions/*/*/bin/"
+    	node_path="${HOME}/.nvm/versions/*/*/bin/"
        
 #
 ## Forever Process ID
 #
-#        forever_process=`${node_path}/forever --plain list | grep $node | sed -nr 's/.*\[(.*)\].*/\1/p'`
+#        {frvr}=`${node_path}/forever --plain list | grep $node | sed -nr 's/.*\[(.*)\].*/\1/p'`
 #        # Node process work directory
 #        nwd=`pwdx $node 2>/dev/null | awk '{print $2}'`
 #
@@ -147,58 +148,56 @@ function os_up {
 # Start Persona Node
 start(){
         proc_vars
-	node_path="${HOME}/.nvm/versions/*/*/bin/"
         if [ -e $personadir/app.js ]; then
                 echo -e "\n\t✔ Persona Node installation found!"
                 if [ "$node" != "" ] && [ "$node" != "0" ]; then
-                        echo -e "\tA working instance of ARK Node was found with:"
-                        echo -e "\tSystem PID: $node, Forever PID $forever_process"
+                        echo -e "\tA working instance of the Persona node was found with:"
+                        echo -e "\tSystem PID: $node, Forever PID ${frvr}"
                         echo -e "\tand Work Directory: $personadir\n"
-        else
-            echo -e "\n\tStarting Persona Node..."
-            cd $personadir
-            ${node_path}/forever start --silent app.js --genesis genesisBlock.${persona_environment}.json --config config.${persona_environment}.json >&- 2>&-
-            cd $parent
-            echo -e "\t✔ Persona Node was successfully started"
-            sleep 1
-            echo -e "\n\tPersona Node started with:"
-            echo -e "\tSystem PID: $node, Forever PID $forever_process"
-            echo -e "\tand Work Directory: $personadir\n"
+        	else
+			echo -e "\n\tStarting Persona Node..."
+			${node_path}/forever start --silent app.js --genesis genesisBlock.${persona_environment}.json --config config.${persona_environment}.json >&- 2>&-
+			echo -e "\t✔ Persona Node was successfully started"
+			sleep 1
+			echo -e "\n\tPersona Node started with:"
+			echo -e "\tSystem PID: $node, Forever PID $frvr"
+
+			echo -e "\tand Work Directory: $personadir\n"
                 fi
-    else
-        echo -e "\n✘ No Persona Node installation is found\n"
+	else
+        	echo -e "\n✘ No Persona Node installation is found\n"
     fi
 }
 
 # Rebuild the Persona Node
 rebuild(){
         proc_vars
-	killit
-	drop_db
-	create_db
-	sudo -u postgres psql -q -c "UPDATE pg_database SET datallowconn = true WHERE datname = 'persona_testnet';"
+        killit
+        drop_db
+        create_db
+        sudo -u postgres psql -q -c "UPDATE pg_database SET datallowconn = true WHERE datname = 'persona_testnet';"
 
-	if ! curl -s http://5.135.75.78/test_net/latest-db --output ${personadir}/snapshot.dump ; then 
-	        echo "X Failed to download the snapshot"
-        else
-                echo "\t✔ Succesfully downloaded the snapshot"
-	fi
-	
-	sleep 5
+        if ! curl -s http://5.135.75.78/${snapshot_environment} --output ${personadir}/latest-db ; then 
+                echo -e "X Failed to download the snapshot"
+            else
+                    echo -e  "\t✔ Succesfully downloaded the snapshot"
+        fi
+        
+        sleep 5
 
-	if ! gunzip -fcq  ${personadir}/latest-db >  ${personadir}/snapshot.dump; then
-		echo "X Failed to unpack the shapshot"
-	fi
+        if ! gunzip -fcq  ${personadir}/latest-db >  ${personadir}/snapshot.dump; then
+            echo -e "X Failed to unpack the shapshot"
+        fi
 
-        echo "\t✔ Restoring the snapshot"
-	pg_restore -O -d persona_${persona_environment} ${personadir}/snapshot.dump 2>&- 
+        echo -e "\t✔ Restoring the snapshot"
+        pg_restore -O -d persona_${persona_environment} ${personadir}/snapshot.dump 2>&- 
 
-	echo " Cleaning up the file system."
-	$rm -fr ${personadir}/latest-db ${personadir}/snapshot.dump
+        echo  -e "\t Cleaning up the file system."
+        rm -fr ${personadir}/latest-db ${personadir}/snapshot.dump
 
-	echo " Tunning the database."
-	sudo -u postgres psql -q -d persona_${persona_environment} -c 'CREATE INDEX IF NOT EXISTS "mem_accounts2delegates_dependentId" ON "mem_accounts2delegates" ("dependentId");'
-	start
+        echo -e "\t Tunning the database."
+        sudo -u postgres psql -q -d persona_${persona_environment} -c 'CREATE INDEX IF NOT EXISTS "mem_accounts2delegates_dependentId" ON "mem_accounts2delegates" ("dependentId");'
+        start
 
 }
 
@@ -206,13 +205,12 @@ rebuild(){
 # Node Status
 status(){
         proc_vars
-	node_path="${HOME}/.nvm/versions/*/*/bin/"
         if [ -e $personadir/app.js ]; then
 		echo -e "\n\tStatus Persona Node..."
                 echo -e "\t✔ Persona Node installation found!"
                 if [ "$node" != "" ] && [ "$node" != "0" ]; then
                         echo -e "\tPersona Node process is working with:"
-                        echo -e "\tSystem PID: $node, Forever PID $forever_process"
+                        echo -e "\tSystem PID: $node, Forever PID $frvr"
                         echo -e "\tand Work Directory: $personadir"
         		query
 			echo -e "\tBlock height: $HEIGHT"
@@ -233,9 +231,9 @@ restart(){
 	
     if [ "$node" != "" ] && [ "$node" != "0" ]; then
         echo -e "\tInstance of Persona Node found with:"
-        echo -e "\tSystem PID: $node, Forever PID $forever_process"
+        echo -e "\tSystem PID: $node, Forever PID ${frvr}"
         echo -e "\tDirectory: $personadir\n"
-        ${node_path}/forever restart -s $forever_process >&- 2>&-
+        ${node_path}/forever restart -s ${frvr} >&- 2>&-
         echo -e "\t✔ Persona Node was successfully restarted\n"
     else
         echo -e "\n\t✘ Persona Node process is not running\n"
@@ -250,18 +248,15 @@ killit(){
 		echo -e "\n\tKillin Persona Node..."
                 echo -e "\t✔ Persona Node installation found!"
                 if [ "$node" != "" ] && [ "$node" != "0" ]; then
-                        echo -e "\tA working instance of Pesona Node was found with:"
-                        echo -e "\tSystem PID: $node, Forever PID $forever_process"
-                        echo -e "\tand Work Directory: $personadir\n"
-            echo -e "\n\tStopping Pesona Node..."
-            cd $personadir
+			echo -e "\tA working instance of Pesona Node was found with:"
+			echo -e "\tSystem PID: $node, Forever PID ${frvr}"
+			echo -e "\tand Work Directory: $personadir\n"
+			echo -e "\n\tStopping Pesona Node..."
 
-	    echo ${node_path} $forever_process 
-            ${node_path}/forever stop $node >&- 2>&-
-            cd $parent
-            echo -e "\t✔ Persona Node was successfully stopped"
+			${node_path}/forever stop $node >&- 2>&-
+			echo -e "\t✔ Persona Node was successfully stopped"
                 else
-            echo -e "\t✘ No Persona Node process is running"
+            		echo -e "\t✘ No Persona Node process is running"
                 fi
         else
                 echo -e "\t✘ No Persona Node installation is found"
