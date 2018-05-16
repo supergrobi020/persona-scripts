@@ -59,12 +59,15 @@ function proc_vars {
         # Getting the parent of the install path
         parent=`dirname $personadir 2>&1`
 
-#        # Forever Process ID
-#        forever_process=`forever --plain list | grep $node | sed -nr 's/.*\[(.*)\].*/\1/p'`
+	node_path="${HOME}/.nvm/versions/*/*/bin/"
+       
 #
+## Forever Process ID
+#
+#        forever_process=`${node_path}/forever --plain list | grep $node | sed -nr 's/.*\[(.*)\].*/\1/p'`
 #        # Node process work directory
 #        nwd=`pwdx $node 2>/dev/null | awk '{print $2}'`
-        node_path="${HOME}/.nvm/versions/*/*/bin/"
+#
 }
 
 
@@ -144,6 +147,7 @@ function os_up {
 # Start Persona Node
 start(){
         proc_vars
+	node_path="${HOME}/.nvm/versions/*/*/bin/"
         if [ -e $personadir/app.js ]; then
                 echo -e "\n\t✔ Persona Node installation found!"
                 if [ "$node" != "" ] && [ "$node" != "0" ]; then
@@ -153,7 +157,7 @@ start(){
         else
             echo -e "\n\tStarting Persona Node..."
             cd $personadir
-            ${node_path}/forever start -s app.js --genesis genesisBlock.${persona_environment}.json --config config.${persona_environment}.json >&- 2>&-
+            ${node_path}/forever start --silent app.js --genesis genesisBlock.${persona_environment}.json --config config.${persona_environment}.json >&- 2>&-
             cd $parent
             echo -e "\t✔ Persona Node was successfully started"
             sleep 1
@@ -166,10 +170,43 @@ start(){
     fi
 }
 
+# Rebuild the Persona Node
+rebuild(){
+        proc_vars
+	killit
+	drop_db
+	create_db
+	sudo -u postgres psql -q -c "UPDATE pg_database SET datallowconn = true WHERE datname = 'persona_mainnet';"
+
+	if ! curl -s http://5.135.75.78/main_net/latest-db --output ${personadir}/snapshot.dump ; then 
+	        echo "X Failed to download the snapshot"
+        else
+                echo "\t✔ Succesfully downloaded the snapshot"
+	fi
+	
+	sleep 5
+
+	if ! gunzip -fcq  ${personadir}/latest-db >  ${personadir}/snapshot.dump; then
+		echo "X Failed to unpack the shapshot"
+	fi
+
+        echo "\t✔ Restoring the snapshot"
+	pg_restore -O -d persona_${persona_environment} ${personadir}/snapshot.dump 2>&- 
+
+	echo " Cleaning up the file system."
+	$rm -fr ${personadir}/latest-db ${personadir}/snapshot.dump
+
+	echo " Tunning the database."
+	sudo -u postgres psql -q -d persona_${persona_environment} -c 'CREATE INDEX IF NOT EXISTS "mem_accounts2delegates_dependentId" ON "mem_accounts2delegates" ("dependentId");'
+	start
+
+}
+
 
 # Node Status
 status(){
         proc_vars
+	node_path="${HOME}/.nvm/versions/*/*/bin/"
         if [ -e $personadir/app.js ]; then
 		echo -e "\n\tStatus Persona Node..."
                 echo -e "\t✔ Persona Node installation found!"
@@ -193,12 +230,12 @@ status(){
 # Restart Node
 restart(){
     proc_vars
-    #echo -e "\n\tRestarting Pesona Node..."
+	
     if [ "$node" != "" ] && [ "$node" != "0" ]; then
-                echo -e "\tInstance of Persona Node found with:"
-                echo -e "\tSystem PID: $node, Forever PID $forever_process"
-                echo -e "\tDirectory: $personadir\n"
-        ${node_path}/forever restart $forever_process >&- 2>&-
+        echo -e "\tInstance of Persona Node found with:"
+        echo -e "\tSystem PID: $node, Forever PID $forever_process"
+        echo -e "\tDirectory: $personadir\n"
+        ${node_path}/forever restart -s $forever_process >&- 2>&-
         echo -e "\t✔ Persona Node was successfully restarted\n"
     else
         echo -e "\n\t✘ Persona Node process is not running\n"
@@ -218,7 +255,9 @@ killit(){
                         echo -e "\tand Work Directory: $personadir\n"
             echo -e "\n\tStopping Pesona Node..."
             cd $personadir
-            ${node_path}/forever stop $forever_process >&- 2>&-
+
+	    echo ${node_path} $forever_process 
+            ${node_path}/forever stop $node >&- 2>&-
             cd $parent
             echo -e "\t✔ Persona Node was successfully stopped"
                 else
@@ -253,8 +292,11 @@ case $1 in
     "os_update")
       os_up
       ;;
+    "rebuild")
+      rebuild
+    ;;
     *)
-    echo 'Available options: reload (stop/start), start, stop, os_update, clean_db'
+    echo 'Available options: reload (stop/start), start, stop, os_update, clean_db, rebuild'
     echo "Usage: ${0}"
     exit 1
     ;;
