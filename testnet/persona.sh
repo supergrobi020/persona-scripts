@@ -178,7 +178,7 @@ rebuild(){
 	create_db
 	sudo -u postgres psql -q -c "UPDATE pg_database SET datallowconn = true WHERE datname = 'persona_testnet';"
 
-	if ! curl -s http://5.135.75.78/main_net/latest-db --output ${personadir}/snapshot.dump ; then 
+	if ! curl -s http://5.135.75.78/test_net/latest-db --output ${personadir}/snapshot.dump ; then 
 	        echo "X Failed to download the snapshot"
         else
                 echo "\t✔ Succesfully downloaded the snapshot"
