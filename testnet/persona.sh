@@ -16,7 +16,6 @@
 LOC_SERVER="http://127.0.0.1"
 
 persona_environment="testnet"
-snapshot_environment="test_net/db_dump-2018-05-13/persona_testnet-2018-05-13.sql.gz"
 
 pause(){
         read -p "   	Press [Enter] key to continue..." fakeEnterKey
@@ -60,7 +59,7 @@ function proc_vars {
 
         # Getting the parent of the install path
         parent=`dirname $personadir 2>&1`
-    	node_path="${HOME}/.nvm/versions/*/*/bin/"
+    	node_path="${HOME}/.nvm/versions/*/*/bin"
        
 #
 ## Forever Process ID
@@ -177,7 +176,7 @@ rebuild(){
         create_db
         sudo -u postgres psql -q -c "UPDATE pg_database SET datallowconn = true WHERE datname = 'persona_testnet';"
 
-        if ! curl -s http://5.135.75.78/${snapshot_environment} --output ${personadir}/latest-db ; then 
+        if ! curl -s http://5.135.75.78/${persona_environment}/latest-db --output ${personadir}/latest-db ; then 
                 echo -e "X Failed to download the snapshot"
             else
                     echo -e  "\t✔ Succesfully downloaded the snapshot"
@@ -193,7 +192,7 @@ rebuild(){
         pg_restore -O -d persona_${persona_environment} ${personadir}/snapshot.dump 2>&- 
 
         echo  -e "\t Cleaning up the file system."
-        rm -fr ${personadir}/latest-db ${personadir}/snapshot.dump
+        #rm -fr ${personadir}/latest-db ${personadir}/snapshot.dump
 
         echo -e "\t Tunning the database."
         sudo -u postgres psql -q -d persona_${persona_environment} -c 'CREATE INDEX IF NOT EXISTS "mem_accounts2delegates_dependentId" ON "mem_accounts2delegates" ("dependentId");'
