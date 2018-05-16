@@ -174,7 +174,7 @@ rebuild(){
         killit
         drop_db
         create_db
-        sudo -u postgres psql -q -c "UPDATE pg_database SET datallowconn = true WHERE datname = 'persona_testnet';"
+        sudo -u postgres psql -q -c "UPDATE pg_database SET datallowconn = true WHERE datname = 'persona_${persona_environment}';"
 
         if ! curl -s http://5.135.75.78/${persona_environment}/latest-db --output ${personadir}/latest-db ; then 
                 echo -e "X Failed to download the snapshot"
@@ -192,7 +192,7 @@ rebuild(){
         pg_restore -O -d persona_${persona_environment} ${personadir}/snapshot.dump 2>&- 
 
         echo  -e "\t Cleaning up the file system."
-        #rm -fr ${personadir}/latest-db ${personadir}/snapshot.dump
+        rm -fr ${personadir}/latest-db ${personadir}/snapshot.dump
 
         echo -e "\t Tunning the database."
         sudo -u postgres psql -q -d persona_${persona_environment} -c 'CREATE INDEX IF NOT EXISTS "mem_accounts2delegates_dependentId" ON "mem_accounts2delegates" ("dependentId");'
