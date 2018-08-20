@@ -158,12 +158,12 @@ function nvm {
         node_check node
         if [ "$return_" == 0 ]; then
                 echo -e "\n[Info] Node is not installed, installing..."
-                curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh 2>/dev/null | bash >>install.log
+                curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.32.0/install.sh 2>/dev/null | bash >>install.log
                 export NVM_DIR="$HOME/.nvm"
                 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
                 ### Installing node ###
-                node_version="8.11.2"
+                node_version="8.11.1"
                 nvm install ${node_version} >>install.log
                 nvm use ${node_version} >>install.log
                 nvm alias default ${node_version} >>install.log
@@ -198,7 +198,7 @@ clean_install(){
     	nvm
 
 	    echo -e "\n[Info] Cloaning and installing the Persona node.\n"
-        git clone https://github.com/PersonaIam/personatestnet persona-node
+        git clone https://github.com/PersonaIam/personatestnet -b persona-mainnet persona-node
         cd persona-node
         npm install libpq 2>/dev/null
         npm install secp256k1 2>/dev/null

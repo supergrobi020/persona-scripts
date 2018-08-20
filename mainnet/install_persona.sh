@@ -20,7 +20,7 @@ pause(){
 }
 
 persona_environment="mainnet"
-personash_loc="https://raw.githubusercontent.com/supergrobi020/persona-scripts/master/mainnet/persona.sh"
+personash_loc="https://raw.githubusercontent.com/supergrobi020/persona-scripts/master/${persona_environment}/persona.sh"
 
 # Check if program is installed
 function node_check {
@@ -198,7 +198,7 @@ clean_install(){
     	nvm
 
 	    echo -e "\n[Info] Cloaning and installing the Persona node.\n"
-        git clone https://github.com/PersonaIam/personatestnet -b persona-mainnet persona-node
+        git clone https://github.com/PersonaIam/persona-${persona_environment} persona-node
         cd persona-node
         npm install libpq 2>/dev/null
         npm install secp256k1 2>/dev/null

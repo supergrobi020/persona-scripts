@@ -179,7 +179,7 @@ rebuild(){
         if ! curl -s http://5.135.75.78/${persona_environment}/latest-db --output ${personadir}/latest-db ; then 
                 echo -e "X Failed to download the snapshot"
             else
-                    echo -e  "\t✔ Succesfully downloaded the snapshot"
+                echo -e  "\t✔ Succesfully downloaded the snapshot"
         fi
         
         sleep 5
