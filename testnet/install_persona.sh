@@ -163,7 +163,7 @@ function nvm {
                 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
                 ### Installing node ###
-                node_version="8.11.1"
+                node_version="8.11.4"
                 nvm install ${node_version} >>install.log
                 nvm use ${node_version} >>install.log
                 nvm alias default ${node_version} >>install.log
