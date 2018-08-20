@@ -20,7 +20,7 @@ pause(){
 }
 
 persona_environment="testnet"
-personash_loc="https://raw.githubusercontent.com/supergrobi020/persona-scripts/master/testnet/persona.sh"
+personash_loc="https://raw.githubusercontent.com/supergrobi020/persona-scripts/master/${persona_environment}/persona.sh"
 
 # Check if program is installed
 function node_check {
@@ -158,7 +158,7 @@ function nvm {
         node_check node
         if [ "$return_" == 0 ]; then
                 echo -e "\n[Info] Node is not installed, installing..."
-                curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.32.0/install.sh 2>/dev/null | bash >>install.log
+                curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh 2>/dev/null | bash >>install.log
                 export NVM_DIR="$HOME/.nvm"
                 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
@@ -179,7 +179,8 @@ function nvm {
                 ### Install forever ###
                 npm install forever -g >>install.log 2>&1
                 sudo ln -s $HOME/.nvm/versions/node/v${node_version}/bin/node /usr/local/bin/node
-                echo -e "\n[Info] Forever has been installed."
+                sudo ln -s $HOME/.nvm/versions/node/v${node_version}/bin/forever /usr/local/bin/node
+		echo -e "\n[Info] Forever has been installed."
         else
                 echo -e "\n[Info] Forever is alredy installed."
         fi
@@ -198,7 +199,7 @@ clean_install(){
     	nvm
 
 	    echo -e "\n[Info] Cloaning and installing the Persona node.\n"
-        git clone https://github.com/PersonaIam/personatestnet -b persona-mainnet persona-node
+        git clone https://github.com/PersonaIam/persona${persona_environment} persona-node
         cd persona-node
         npm install libpq 2>/dev/null
         npm install secp256k1 2>/dev/null
