@@ -179,6 +179,7 @@ function nvm {
                 ### Install forever ###
                 npm install forever -g >>install.log 2>&1
                 sudo ln -s $HOME/.nvm/versions/node/v${node_version}/bin/node /usr/local/bin/node
+                sudo ln -s $HOME/.nvm/versions/node/v${node_version}/bin/forever /usr/local/bin forever
                 echo -e "\n[Info] Forever has been installed."
         else
                 echo -e "\n[Info] Forever is alredy installed."
